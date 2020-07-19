@@ -48,11 +48,11 @@ def per_pop(df):
     if run == "death_df":
         df.columns = ['County','Total Population','Cumulative Deaths']
         df['Total Population'] = pd.to_numeric(df['Total Population'])
-        df.loc[:,"Cumulative Deaths per Million Population"] = (df.loc[:,'Cumulative Deaths']) / (df.loc[:,'Total Population']) * 10**6
+        df.loc[:,"Cumulative Deaths per 100,000 Population"] = (df.loc[:,'Cumulative Deaths']) / (df.loc[:,'Total Population']) * 10**5
     elif run == "case_df":
         df.columns = ['County','Total Population','Cumulative Cases']
         df['Total Population'] = pd.to_numeric(df['Total Population'])
-        df.loc[:,"Cumulative Cases per Million Population"] = (df.loc[:,'Cumulative Cases']) / (df.loc[:,'Total Population']) * 10**6
+        df.loc[:,"Cumulative Cases per 100,000 Population"] = (df.loc[:,'Cumulative Cases']) / (df.loc[:,'Total Population']) * 10**5
         print("Houston, we still have a problem.")
 
     #return this edited dataframe as a csv
