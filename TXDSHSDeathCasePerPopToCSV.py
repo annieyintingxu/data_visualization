@@ -1,11 +1,13 @@
+import math
+import os
+import time
+from datetime import datetime
+
+import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
-from datetime import datetime
-import time
-import os
-import pandas as pd 
-import math
+
 
 def per_pop(df):
     '''
@@ -34,7 +36,7 @@ def per_pop(df):
                                         #removes the second row and all after total
                                         #takes about 6 seconds to run through all rows
                                         #pd.read_excel makes strings from the "population" entries and integers from the "death" entries
-        if row[4] != 0 or row_count == math.inf: #conditional plays desired role if  on first included date, all counties report 0 cases or deaths
+        if type(row[3]) != int or row_count == math.inf or row[1] == "Unknown": #drops titular rows, "Unknown" row, and anything after "Total" row. For some reason, row[0] gives the index, population is a string, but all cases/deaths are integers
             df.drop(index = row[0], axis = 0, inplace = True)
         elif row[1] == "Total": #lol this is finally working
             row_count = math.inf
@@ -51,12 +53,12 @@ def per_pop(df):
         df.loc[:,"Cumulative Deaths per 100,000 Population"] = (df.loc[:,'Cumulative Deaths']) / (df.loc[:,'Total Population']) * 10**5
     elif run == "case_df":
         df.columns = ['County','Total Population','Cumulative Cases']
-        df['Total Population'] = pd.to_numeric(df['Total Population'])
+        df['Total Population'] = pd.to_numeric(df['Total Population']) #running into issues because TXDSHS added new "unknown" county row on July 27, 2020
         df.loc[:,"Cumulative Cases per 100,000 Population"] = (df.loc[:,'Cumulative Cases']) / (df.loc[:,'Total Population']) * 10**5
-        print("Houston, we still have a problem.")
 
     #return this edited dataframe as a csv
     df.to_csv(name + '.csv', index = False) #change naming to the original name of the first column, first row
+    print(".csv created.")
 
 
 #automated download of Texas Fatality Data by County ((and hospitalizations at some point??)) and then plug it into helper function
@@ -96,5 +98,3 @@ time.sleep(5)
 case_df = pd.read_excel('/Users/Dino-Sunlight/Downloads/Texas COVID-19 Case Count Data by County.xlsx') #be aware -- this is a very specific call to load data. LOL ok it takes the first row as column titles....great...
 run = "case_df"
 per_pop(case_df)
-
-
