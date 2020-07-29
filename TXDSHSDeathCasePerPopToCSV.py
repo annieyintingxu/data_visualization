@@ -32,11 +32,9 @@ def per_pop(df):
         print("What the heck. Neither case or death dataframe.")
     name = name.replace("/","-")
     row_count = 0 #initializes row_count
-    for row in df.itertuples(): #this block: makes each row of the csv a tuple and then names it "row." nested block: removes appendix rows. 
-                                        #removes the second row and all after total
-                                        #takes about 6 seconds to run through all rows
-                                        #pd.read_excel makes strings from the "population" entries and integers from the "death" entries
-        if type(row[3]) != int or row_count == math.inf or row[1] == "Unknown": #drops titular rows, "Unknown" row, and anything after "Total" row. For some reason, row[0] gives the index, population is a string, but all cases/deaths are integers
+     #drops titular rows, "Unknown" row, and anything after "Total" row. For some reason, row[0] gives the index, population is a string, but all cases/deaths are integers    
+    for row in df.itertuples():
+        if type(row[3]) != int or row_count == math.inf or row[1] == "Unknown":
             df.drop(index = row[0], axis = 0, inplace = True)
         elif row[1] == "Total": #lol this is finally working
             row_count = math.inf
@@ -55,7 +53,11 @@ def per_pop(df):
         df.columns = ['County','Total Population','Cumulative Cases']
         df['Total Population'] = pd.to_numeric(df['Total Population']) #running into issues because TXDSHS added new "unknown" county row on July 27, 2020
         df.loc[:,"Cumulative Cases per 100,000 Population"] = (df.loc[:,'Cumulative Cases']) / (df.loc[:,'Total Population']) * 10**5
-
+    #sort dataframe by population of county
+    total = df.tail(1) #stores the total row before deleting it
+    df.drop(df.tail(1).index,inplace=True)
+    df.sort_values(by = "Total Population", inplace = True, ascending = False) #sorts
+    df.append(total, ignore_index = True) #adds total row back in
     #return this edited dataframe as a csv
     df.to_csv(name + '.csv', index = False) #change naming to the original name of the first column, first row
     print(".csv created.")
@@ -67,7 +69,6 @@ CD_PATH = '/Users/Dino-Sunlight/Desktop/COVIDeeDesktop/chromedriver'
 chromeOptions = webdriver.ChromeOptions()
 #prefs = {"download.default_directory" : dl_directory}
 #chromeOptions.add_experimental_option("prefs",prefs)
-
 
 #downloads death data from TXDSHS website
 driver = webdriver.Chrome(executable_path=CD_PATH)
